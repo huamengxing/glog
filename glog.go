@@ -761,7 +761,8 @@ type syncBuffer struct {
 	*bufio.Writer
 	file   *os.File
 	sev    severity
-	nbytes uint64 // The number of bytes written to this file
+	nbytes uint64    // The number of bytes written to this file
+	rtime  time.Time // The time last rotate log file..
 }
 
 func (sb *syncBuffer) Sync() error {
@@ -769,11 +770,22 @@ func (sb *syncBuffer) Sync() error {
 }
 
 func (sb *syncBuffer) Write(p []byte) (n int, err error) {
-	if sb.nbytes+uint64(len(p)) >= MaxSize {
-		if err := sb.rotateFile(time.Now()); err != nil {
-			sb.logger.exit(err)
+
+	if false {
+		if sb.rtime.Sub(time.Now()) >= 24*time.Hour {
+			sb.rtime = time.Now()
+			if err := sb.rotateFile(time.Now()); err != nil {
+				sb.logger.exit(err)
+			}
+		}
+	} else {
+		if sb.nbytes+uint64(len(p)) >= MaxSize {
+			if err := sb.rotateFile(time.Now()); err != nil {
+				sb.logger.exit(err)
+			}
 		}
 	}
+
 	n, err = sb.Writer.Write(p)
 	sb.nbytes += uint64(n)
 	if err != nil {
@@ -823,6 +835,7 @@ func (l *loggingT) createFiles(sev severity) error {
 		sb := &syncBuffer{
 			logger: l,
 			sev:    s,
+			rtime:  now,
 		}
 		if err := sb.rotateFile(now); err != nil {
 			return err
