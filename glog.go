@@ -772,7 +772,7 @@ func (sb *syncBuffer) Sync() error {
 func (sb *syncBuffer) Write(p []byte) (n int, err error) {
 
 	if true {
-		if time.Now().Sub(sb.rtime) >= 1*time.Minute {
+		if time.Now().Sub(sb.rtime) >= 24*time.Hour {
 			sb.rtime = time.Now()
 			if err := sb.rotateFile(time.Now()); err != nil {
 				sb.logger.exit(err)
