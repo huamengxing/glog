@@ -1,5 +1,3 @@
-// Go support for leveled logs, analogous to https://code.google.com/p/google-glog/
-//
 // Copyright 2013 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -887,9 +885,9 @@ func (l *loggingT) setV(pc uintptr) Level {
 	if strings.HasSuffix(file, ".go") {
 		file = file[:len(file)-3]
 	}
-	if slash := strings.LastIndex(file, "/"); slash >= 0 {
-		file = file[slash+1:]
-	}
+	// if slash := strings.LastIndex(file, "/"); slash >= 0 {
+	// file = file[slash+1:]
+	// }
 	for _, filter := range l.vmodule.filter {
 		if filter.match(file) {
 			l.vmap[pc] = filter.level
