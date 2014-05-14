@@ -52,6 +52,7 @@ var (
 	program  = filepath.Base(os.Args[0])
 	host     = "unknownhost"
 	userName = "unknownuser"
+	gopath   = "unknowpath"
 )
 
 func init() {
@@ -64,6 +65,8 @@ func init() {
 	if err == nil {
 		userName = current.Username
 	}
+
+	gopath = os.Getenv("GOPATH")
 
 	// Sanitize userName since it may contain filepath separators on Windows.
 	userName = strings.Replace(userName, `\`, "_", -1)
