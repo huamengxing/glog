@@ -1,3 +1,5 @@
+// Go support for leveled logs, analogous to https://code.google.com/p/google-glog/
+//
 // Copyright 2013 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -533,10 +535,10 @@ func (l *loggingT) header(s severity) *buffer {
 		file = "???"
 		line = 1
 	} else {
-		// slash := strings.LastIndex(file, "/")
-		// if slash >= 0 {
-		// file = file[slash+1:]
-		// }
+		slash := strings.LastIndex(file, "src/")
+		if slash >= 0 {
+			file = file[slash+4:]
+		}
 	}
 	if line < 0 {
 		line = 0 // not a real line number, but acceptable to someDigits
@@ -885,9 +887,9 @@ func (l *loggingT) setV(pc uintptr) Level {
 	if strings.HasSuffix(file, ".go") {
 		file = file[:len(file)-3]
 	}
-	// if slash := strings.LastIndex(file, "/"); slash >= 0 {
-	// 	file = file[slash+1:]
-	// }
+	if slash := strings.LastIndex(file, "src/"); slash >= 0 {
+		file = file[slash+4:]
+	}
 	for _, filter := range l.vmodule.filter {
 		if filter.match(file) {
 			l.vmap[pc] = filter.level
