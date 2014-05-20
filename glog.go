@@ -535,9 +535,9 @@ func (l *loggingT) header(s severity) *buffer {
 		file = "???"
 		line = 1
 	} else {
-		slash := strings.LastIndex(file, "src/")
+		slash := strings.LastIndex(file, "/")
 		if slash >= 0 {
-			file = file[slash+4:]
+			file = file[slash+1:]
 		}
 	}
 
@@ -898,8 +898,8 @@ func (l *loggingT) setV(pc uintptr) Level {
 	if strings.HasSuffix(file, ".go") {
 		file = file[:len(file)-3]
 	}
-	if slash := strings.LastIndex(file, "src/"); slash >= 0 {
-		file = file[slash+4:]
+	if slash := strings.LastIndex(file, "/"); slash >= 0 {
+		file = file[slash+1:]
 	}
 	for _, filter := range l.vmodule.filter {
 		if filter.match(file) {
