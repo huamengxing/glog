@@ -106,7 +106,7 @@ func TestHeader(t *testing.T) {
 	}
 	Info("test")
 	var line, pid int
-	n, err := fmt.Sscanf(contents(infoLog), "I0102 15:04:05.678901 %d glog_test.go:%d] test\n", &pid, &line)
+	n, err := fmt.Sscanf(contents(infoLog), "I0102 15:04:05.678901 %d glog/glog_test.go:%d:glog.TestHeader] test\n", &pid, &line)
 	if n != 2 || err != nil {
 		t.Errorf("log format error: %d elements, error %s:\n%s", n, err, contents(infoLog))
 	}
@@ -172,7 +172,7 @@ func TestV(t *testing.T) {
 func TestVmoduleOn(t *testing.T) {
 	setFlags()
 	defer logging.swap(logging.newBuffers())
-	logging.vmodule.Set("glog_test=2")
+	logging.vmodule.Set("glog/glog_test=2")
 	defer logging.vmodule.Set("")
 	if !V(1) {
 		t.Error("V not enabled for 1")
@@ -212,14 +212,14 @@ func TestVmoduleOff(t *testing.T) {
 // vGlobs are patterns that match/don't match this file at V=2.
 var vGlobs = map[string]bool{
 	// Easy to test the numeric match here.
-	"glog_test=1": false, // If -vmodule sets V to 1, V(2) will fail.
-	"glog_test=2": true,
-	"glog_test=3": true, // If -vmodule sets V to 1, V(3) will succeed.
+	"glog/glog_test=1": false, // If -vmodule sets V to 1, V(2) will fail.
+	"glog/glog_test=2": true,
+	"glog/glog_test=3": true, // If -vmodule sets V to 1, V(3) will succeed.
 	// These all use 2 and check the patterns. All are true.
-	"*=2":           true,
-	"?l*=2":         true,
-	"????_*=2":      true,
-	"??[mno]?_*t=2": true,
+	"glog/*=2":           true,
+	"glog/?l*=2":         true,
+	"glog/????_*=2":      true,
+	"glog/??[mno]?_*t=2": true,
 	// These all use 2 and check the patterns. All are false.
 	"*x=2":         false,
 	"m*=2":         false,

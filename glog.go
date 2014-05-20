@@ -528,9 +528,9 @@ where the fields are defined as follows:
 	msg              The user-supplied message
 */
 func (l *loggingT) header(s severity) *buffer {
-	// Lmmdd hh:mm:ss.uuuuuu threadid file:line]
+	// Lmmdd hh:mm:ss.uuuuuu threadid file:line:funcName]
 	now := timeNow()
-	_, file, line, ok := runtime.Caller(3) // It's always the same number of frames to the user's call.
+	pc, file, line, ok := runtime.Caller(3) // It's always the same number of frames to the user's call.
 	if !ok {
 		file = "???"
 		line = 1
@@ -540,6 +540,13 @@ func (l *loggingT) header(s severity) *buffer {
 			file = file[slash+4:]
 		}
 	}
+
+	var funcName string
+	rf := runtime.FuncForPC(pc)
+	if rf != nil {
+		funcName = rf.Name()
+	}
+
 	if line < 0 {
 		line = 0 // not a real line number, but acceptable to someDigits
 	}
@@ -570,9 +577,12 @@ func (l *loggingT) header(s severity) *buffer {
 	buf.WriteString(file)
 	buf.tmp[0] = ':'
 	n := buf.someDigits(1, line)
-	buf.tmp[n+1] = ']'
-	buf.tmp[n+2] = ' '
-	buf.Write(buf.tmp[:n+3])
+	buf.tmp[n+1] = ':'
+	buf.Write(buf.tmp[:n+2])
+	buf.WriteString(funcName)
+	buf.tmp[0] = ']'
+	buf.tmp[1] = ' '
+	buf.Write(buf.tmp[:2])
 	return buf
 }
 
@@ -815,7 +825,7 @@ func (sb *syncBuffer) rotateFile(now time.Time) error {
 	fmt.Fprintf(&buf, "Running on machine: %s\n", host)
 	fmt.Fprintf(&buf, "GOPATH: %s\n", gopath)
 	fmt.Fprintf(&buf, "Binary: Built with %s %s for %s/%s\n", runtime.Compiler, runtime.Version(), runtime.GOOS, runtime.GOARCH)
-	fmt.Fprintf(&buf, "Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg\n")
+	fmt.Fprintf(&buf, "Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line:funcName] msg\n")
 	n, err := sb.file.Write(buf.Bytes())
 	sb.nbytes += uint64(n)
 	return err
