@@ -76,6 +76,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/agtorre/gocolorize"
 	"io"
 	"os"
 	"path/filepath"
@@ -645,6 +646,21 @@ func (l *loggingT) printf(s severity, format string, args ...interface{}) {
 	l.output(s, buf)
 }
 
+func (l *loggingT) getColorByte(s severity, b []byte) []byte {
+	var c gocolorize.Colorize
+	switch s {
+	case warningLog:
+		c = gocolorize.NewColor("yellow")
+	case errorLog:
+		c = gocolorize.NewColor("red")
+	case fatalLog:
+		c = gocolorize.NewColor("magenta")
+	default:
+		c = gocolorize.NewColor("green")
+	}
+	return []byte(c.Paint(string(b)))
+}
+
 // output writes the data to the log files and releases the buffer.
 func (l *loggingT) output(s severity, buf *buffer) {
 	l.mu.Lock()
@@ -656,10 +672,10 @@ func (l *loggingT) output(s severity, buf *buffer) {
 	}
 	data := buf.Bytes()
 	if l.toStderr {
-		os.Stderr.Write(data)
+		os.Stderr.Write(l.getColorByte(s, data))
 	} else {
 		if l.alsoToStderr || s >= l.stderrThreshold.get() {
-			os.Stderr.Write(data)
+			os.Stderr.Write(l.getColorByte(s, data))
 		}
 		if l.file[s] == nil {
 			if err := l.createFiles(s); err != nil {
